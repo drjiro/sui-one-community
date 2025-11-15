@@ -2,7 +2,7 @@ module fan_dao::fan_dao {
     use sui::sui::SUI;
     use sui::coin::{Self, Coin};
     use sui::balance;
-    use std::string::{String};
+    use std::string::{Self, String};
 
     /// Error codes
     const ENotEnoughPayment: u64 = 0;
@@ -116,7 +116,7 @@ module fan_dao::fan_dao {
       balance::join(&mut dao.treasury, pay_amount);
 
       let uri = string::utf8(
-          b"https://raw.githubusercontent.com/drjiro/sui-one-community/main/src/assets/membership.png"
+          b"https://raw.githubusercontent.com/drjiro/sui-one-community/main/assets/membership.png"
       );
 
       //
@@ -129,6 +129,7 @@ module fan_dao::fan_dao {
       let nft = MembershipNFT {
         id: object::new(ctx),
         number: dao.sold_memberships,
+        uri
       };
       dao.sold_memberships = dao.sold_memberships + 1;
 
@@ -145,6 +146,7 @@ module fan_dao::fan_dao {
       description: String,
       event_uri: String,
       event_price: u64,
+      ctx: &mut TxContext,
     ) {
       let id = dao.next_proposal_id;
       dao.next_proposal_id = id + 1;

@@ -32,12 +32,16 @@ export function makeBuyMembershipTx() {
  * Create Proposal
  */
 export function makeCreateProposalTx(
-  title: string,
-  description: string,
-  uri: string,
-  price: number,
+  // title: string,
+  // description: string,
+  // uri: string,
+  // price: number,
 ) {
   const tx = new Transaction();
+  const title = "Demo Event Proposal";
+  const description = "This is a demo event proposal created for testing purposes.";
+  const uri = "https://raw.githubusercontent.com/drjiro/sui-one-community/main/assets/event1.png";
+  const price = 5000; // Example price in some unit
 
   tx.moveCall({
     target: `${PACKAGE_ID}::fan_dao::new_event_proposal`,

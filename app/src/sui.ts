@@ -9,8 +9,8 @@ export const client = new SuiClient({
 
 // TODO: replace these with your actual IDs
 export const PACKAGE_ID =
-  "0x46ab2068de058786c9eeb2b67472863e54aafa6c842714b4f039c7ec41fb02a9";
-export const DAO_ID = "0xe04211965c01b49d10c80392abf2be762bbd1c41b4e481c336c1b6004ca9ad47";
+  "0xe94404e347fbef68d0690e2670f141b715be2aff182e061f195f1527b5c5eff1";
+export const DAO_ID = "0xd48402c3ef10d6392aa9bcc4d8cafd993b0fb8c20c3ae12a151420291ad86f0d";
 
 // Shared object initial version (from `sui client object DAO_ID`)
 export const DAO_INITIAL_SHARED_VERSION = "13";

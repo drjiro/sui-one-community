@@ -71,6 +71,8 @@ export async function fetchDaoState(): Promise<DaoState> {
     };
   });
 
+  console.log("membership:", fields);
+
   return {
     membershipPrice: Number(fields.membership_price),
     maxMemberships: Number(fields.max_memberships),

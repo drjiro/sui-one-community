@@ -1,8 +1,10 @@
 import { client } from "./sui";
+import { MEMBERSHIP_IMAGE } from "./nftUrl";
 
 export interface NFTItem {
   id: string;
   type: string;
+  number: number;
   imageUrl: string;
 }
 
@@ -30,11 +32,12 @@ export async function fetchOwnedNFTs(owner: string): Promise<NFTItem[]> {
       const number = fields.number;
 
       // ※ 画像 URL は好きに決めてよい
-      const imageUrl = `https://mycdn.com/memberships/${number}.png`;
+      const imageUrl = MEMBERSHIP_IMAGE;
 
       nfts.push({
         id: o.data.objectId,
         type,
+        number,
         imageUrl,
       });
 
@@ -51,6 +54,7 @@ export async function fetchOwnedNFTs(owner: string): Promise<NFTItem[]> {
       nfts.push({
         id: o.data.objectId,
         type,
+        number: 0,
         imageUrl: uri,  // そのまま画像 URL として使用
       });
       continue;

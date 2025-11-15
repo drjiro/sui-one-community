@@ -15,6 +15,7 @@ export default function App() {
   const [dao, setDao] = useState<DaoState | null>(null);
   const [wallet, setWallet] = useState<ConnectedWallet | null>(null);
   const [nfts, setNfts] = useState<NFTItem[]>([]);
+  const MIST_PER_SUI = 1_000_000_000;
 
   // -------------------------
   // DAO Load
@@ -46,7 +47,7 @@ export default function App() {
       console.error("Connect error:", err);
     }
   };
- 
+
   useEffect(() => {
     loadDao();
   }, []);
@@ -55,10 +56,7 @@ export default function App() {
   // Buy Membership
   // -------------------------
   async function handleBuy() {
-    if (!wallet) {
-      await handleConnect();
-      return;
-    }
+    if (!wallet) return await handleConnect();
 
     const tx = makeBuyMembershipTx();
     const result = await executeTx(wallet.wallet, tx);
@@ -71,10 +69,7 @@ export default function App() {
   // Create Proposal
   // -------------------------
   async function handleCreateProposal() {
-    if (!wallet) {
-      await handleConnect();
-      return;
-    }
+    if (!wallet) return await handleConnect();
 
     const title = prompt("Event title?") ?? "";
     const description = prompt("Event description?") ?? "";
@@ -94,95 +89,222 @@ export default function App() {
   // Vote
   // -------------------------
   async function handleVote(id: number, yes: boolean) {
-    if (!wallet) {
-      await handleConnect();
-      return;
-    }
+    if (!wallet) return await handleConnect();
 
     const tx = makeVoteTx(id, yes);
     const result = await executeTx(wallet.wallet, tx);
     console.log("VOTE RESULT:", result);
 
-//    await Dao();
+    await loadDao();
   }
-
-  // -------------------------
-  // Init
-  // -------------------------
-  useEffect(() => {
-    loadDao();
-  }, []);
 
   // -------------------------
   // Render
   // -------------------------
-  if (!dao) return <div>Loading SuixOne Championship Fan DAO…</div>;
+  if (!dao)
+    return (
+      <div style={styles.loading}>
+        Loading Sui x ONE Community DAO…
+      </div>
+    );
 
   return (
-    <div style={{ padding: 20, fontFamily: "sans-serif" }}>
-      <h1>Sui x One championship Fan Community DAO</h1>
+    <div style={styles.page}>
+      <h1 style={styles.title}>SUI × ONE CHAMPIONSHIP<br/>FAN COMMUNITY DAO</h1>
 
-      <button onClick={handleConnect}>
-        {wallet ? `Connected: ${wallet.account.address}` : "Connect Wallet"}
+      {/* Wallet */}
+      <button style={styles.walletBtn} onClick={handleConnect}>
+        {wallet ? `CONNECTED: ${wallet.account.address}` : "CONNECT WALLET"}
       </button>
-      <hr />
 
-      <h2>Your NFTs</h2>
-      {nfts.length === 0 && <p>No NFTs yet.</p>}
+      {/* NFT Section */}
+      <h2 style={styles.sectionTitle}>YOUR NFT COLLECTION</h2>
 
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+      {nfts.length === 0 && <p style={styles.emptyText}>No NFTs yet.</p>}
+
+      <div style={styles.nftGrid}>
         {nfts.map((n) => (
-          <div key={n.id} style={{ width: 150 }}>
+          <div key={n.id} style={styles.card}>
             <img
               src={n.imageUrl}
               alt="NFT"
-              style={{ width: "100%", borderRadius: "8px" }}
+              style={styles.cardImg}
             />
-            <div>ID: {n.id}</div>
-            <div>{n.type.includes("Membership") ? "Membership NFT" : "Event NFT"}</div>
+            <div style={styles.cardText}>ID: {n.id}</div>
+            <div style={styles.cardSub}>
+              {n.type.includes("Membership")
+                ? "Membership NFT"
+                : "Event NFT"}
+            </div>
           </div>
         ))}
       </div>
-      <hr />
-      <h2>Membership</h2>
-      <p>Price: {dao.membershipPrice} MIST</p>
-      <p>
-        Sold: {dao.soldMemberships} / {dao.maxMemberships}
-      </p>
 
-      <button onClick={handleBuy}>Buy Membership</button>
+      {/* Membership */}
+      <h2 style={styles.sectionTitle}>MEMBERSHIP</h2>
+      <div style={styles.infoBox}>
+        <p>Price: <b>{dao.membershipPrice / MIST_PER_SUI} </b> SUI</p>
+        <p>Remaining: <b>{dao.maxMemberships - dao.soldMemberships}</b></p>
+        <p>Sold: {dao.soldMemberships} / {dao.maxMemberships}</p>
+      </div>
 
-      <hr />
-      <h2>Proposals</h2>
-      <button onClick={handleCreateProposal}>Create Proposal</button>
+      <button style={styles.actionBtn} onClick={handleBuy}>
+        BUY MEMBERSHIP
+      </button>
+
+      {/* Proposals */}
+      <h2 style={styles.sectionTitle}>PROPOSALS</h2>
+
+      <button style={styles.actionBtn} onClick={handleCreateProposal}>
+        CREATE PROPOSAL
+      </button>
 
       {dao.proposals.map((p: Proposal) => (
-        <div
-          key={p.id}
-          style={{
-            border: "1px solid #ccc",
-            marginTop: 10,
-            padding: 10,
-            borderRadius: 6,
-          }}
-        >
-          <h3>
+        <div key={p.id} style={styles.proposalCard}>
+          <h3 style={styles.proposalTitle}>
             #{p.id} {p.title}
           </h3>
           <p>{p.description}</p>
           <p>Event URI: {p.eventUri}</p>
-          <p>Price: {p.eventPrice}</p>
+          <p>Price: <b>{p.eventPrice / MIST_PER_SUI} </b>SUI</p>
           <p>YES: {p.yesVotes} / NO: {p.noVotes}</p>
 
-          <p>
-            Executed: {p.executed ? "✔" : "✘"} /
-            Player Approved: {p.approvedByPlayer ? "✔" : "✘"}
-          </p>
-
-          <button onClick={() => handleVote(p.id, true)}>Vote YES</button>
-          <button onClick={() => handleVote(p.id, false)}>Vote NO</button>
+          <button style={styles.voteYes} onClick={() => handleVote(p.id, true)}>
+            VOTE YES
+          </button>
+          <button style={styles.voteNo} onClick={() => handleVote(p.id, false)}>
+            VOTE NO
+          </button>
         </div>
       ))}
     </div>
   );
 }
+
+// =====================
+// MMA UI STYLES
+// =====================
+const styles: Record<string, any> = {
+  page: {
+    padding: 20,
+    background: "#0d0d0d",
+    minHeight: "100vh",
+    color: "#eee",
+    fontFamily: "Impact, Arial Black, sans-serif",
+  },
+
+  loading: {
+    color: "white",
+    padding: 40,
+    fontSize: 28,
+  },
+
+  title: {
+    fontSize: 36,
+    color: "#ff0033",
+    textAlign: "center",
+    fontWeight: "900",
+    textShadow: "0 0 10px #ff0022",
+    marginBottom: 20,
+  },
+
+  walletBtn: {
+    padding: "12px 20px",
+    background: "#111",
+    border: "2px solid #ff0033",
+    color: "#ff0033",
+    fontSize: 18,
+    cursor: "pointer",
+    borderRadius: 6,
+    marginBottom: 20,
+  },
+
+  sectionTitle: {
+    fontSize: 28,
+    marginTop: 30,
+    color: "#ff0033",
+    borderLeft: "6px solid #ff0033",
+    paddingLeft: 10,
+  },
+
+  emptyText: { color: "#888" },
+
+  nftGrid: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 20,
+  },
+
+  card: {
+    background: "#1b1b1b",
+    borderRadius: 12,
+    width: 160,
+    padding: 10,
+    border: "2px solid #333",
+    boxShadow: "0 0 12px #000 inset",
+  },
+
+  cardImg: {
+    width: "100%",
+    borderRadius: 8,
+  },
+
+  cardText: {
+    marginTop: 6,
+    fontWeight: "bold",
+  },
+
+  cardSub: { fontSize: 12, color: "#bbb" },
+
+  infoBox: {
+    background: "#1a1a1a",
+    padding: 15,
+    borderRadius: 8,
+    border: "1px solid #333",
+    marginBottom: 15,
+  },
+
+  actionBtn: {
+    padding: "14px 22px",
+    fontSize: 20,
+    background: "#ff0033",
+    border: "none",
+    borderRadius: 8,
+    fontWeight: "bold",
+    cursor: "pointer",
+    marginBottom: 20,
+    color: "white",
+  },
+
+  proposalCard: {
+    background: "#111",
+    borderLeft: "6px solid #ff0033",
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+
+  proposalTitle: {
+    fontWeight: "bold",
+    color: "#ff0033",
+  },
+
+  voteYes: {
+    background: "#00cc44",
+    padding: "10px 16px",
+    border: "none",
+    borderRadius: 6,
+    marginRight: 10,
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+
+  voteNo: {
+    background: "#cc0000",
+    padding: "10px 16px",
+    border: "none",
+    borderRadius: 6,
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+};
